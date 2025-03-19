@@ -1,0 +1,21 @@
+{{- if .Values.rbac.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "tekton.fullname" . }}-role-dashboard
+  namespace: "{{ .Release.Namespace }}"
+rules:
+  - apiGroups: ["tekton.dev"]
+    resources: ["stepactions", "pipelines", "tasks", "pipelineruns", "taskruns", "pipelinesets", "clustertasks", "extensions"]
+    verbs: ["*"]
+  - apiGroups: ["dashboard.tekton.dev"]
+    resources: ["extensions"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "deployments", "configmaps", "secrets"]
+    verbs: ["*"]
+{{- end }}
+
