@@ -1,23 +1,21 @@
 {{- if .Values.rbac.enabled }}
-
+{{- range .Values.rbac.roles }}
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ .Values.rbac.roleName }}
-  namespace: {{ .Values.rbac.roleNamespace }}
+  name: {{ .roleName }}
+  namespace: {{ .roleNamespace }}
 rules:
-  # Permissions for Tekton resources
   - apiGroups: ["tekton.dev"]
     resources: ["stepactions", "pipelines", "tasks", "pipelineruns", "taskruns", "pipelinesets", "clustertasks", "extensions"]
-    verbs: ["*"]  # All actions (get, list, create, update, delete, etc.)
+    verbs: ["*"]
   - apiGroups: ["dashboard.tekton.dev"]
-    resources:
-      - "extensions"
+    resources: ["extensions"]
     verbs: ["*"]
   - apiGroups: [""]
     resources: ["namespaces"]
     verbs: ["get", "list"]
-  # Permissions for Kubernetes resources related to Tekton (like pods, services, etc.)
   - apiGroups: [""]
     resources: ["pods", "pods/log", "services", "deployments", "configmaps", "secrets"]
     verbs: ["*"]
@@ -26,20 +24,22 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ .Values.rbac.roleName }}-binding
-  namespace: {{ .Values.rbac.roleNamespace }}
+  name: {{ .roleName }}-binding
+  namespace: {{ .roleNamespace }}
 subjects:
   - kind: Group
-    name: {{ .Values.rbac.groupName }}
+    name: {{ .groupName }}
     apiGroup: rbac.authorization.k8s.io
   - kind: ServiceAccount
-    name: {{ .Values.rbac.serviceAccountName }}
-    namespace: {{ .Values.rbac.serviceAccountNamespace }}
+    name: {{ .serviceAccountName }}
+    namespace: {{ .serviceAccountNamespace }}
 roleRef:
   kind: Role
-  name: {{ .Values.rbac.roleName }}
+  name: {{ .roleName }}
   apiGroup: rbac.authorization.k8s.io
+{{- end }}
 
+{{- if .Values.rbac.clusterRoleName }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -49,20 +49,27 @@ rules:
   - apiGroups: [""]
     resources: ["namespaces"]
     verbs: ["get", "list"]
+{{- end }}
 
+{{- if .Values.rbac.clusterRoleBindingName }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ .Values.rbac.clusterRoleBindingName }}
 subjects:
+{{- range .Values.rbac.roles }}
   - kind: Group
-    name: {{ .Values.rbac.groupName }}
+    name: {{ .groupName }}
     apiGroup: rbac.authorization.k8s.io
+  - kind: ServiceAccount
+    name: {{ .serviceAccountName }}
+    namespace: {{ .serviceAccountNamespace }}
+{{- end }}
 roleRef:
   kind: ClusterRole
   name: {{ .Values.rbac.clusterRoleName }}
   apiGroup: rbac.authorization.k8s.io
-
+{{- end }}
 {{- end }}
 
