@@ -1,11 +1,11 @@
 {{- if .Values.rbac.enabled }}
-{{- range .Values.rbac.roles }}
----
+
+# Role
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ .roleName }}
-  namespace: {{ .roleNamespace }}
+  name: {{ include "tekton.fullname" . }}-role
+  namespace: "{{ .Release.Namespace }}"
 rules:
   - apiGroups: ["tekton.dev"]
     resources: ["stepactions", "pipelines", "tasks", "pipelineruns", "taskruns", "pipelinesets", "clustertasks", "extensions"]
@@ -21,55 +21,52 @@ rules:
     verbs: ["*"]
 
 ---
+
+# RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ .roleName }}-binding
-  namespace: {{ .roleNamespace }}
+  name: {{ include "tekton.fullname" . }}-rolebinding
+  namespace: "{{ .Release.Namespace }}"
 subjects:
   - kind: Group
-    name: {{ .groupName }}
+    name: {{ .Values.rbac.groupName }}
     apiGroup: rbac.authorization.k8s.io
   - kind: ServiceAccount
-    name: {{ .serviceAccountName }}
-    namespace: {{ .serviceAccountNamespace }}
+    name: {{ include "tekton.serviceAccountName" . }}
+    namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: Role
-  name: {{ .roleName }}
+  name: {{ include "tekton.fullname" . }}-role
   apiGroup: rbac.authorization.k8s.io
-{{- end }}
 
-{{- if .Values.rbac.clusterRoleName }}
 ---
+
+# ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Values.rbac.clusterRoleName }}
+  name: {{ include "tekton.fullname" . }}-clusterrole
 rules:
   - apiGroups: [""]
     resources: ["namespaces"]
     verbs: ["get", "list"]
-{{- end }}
 
-{{- if .Values.rbac.clusterRoleBindingName }}
 ---
+
+# ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ .Values.rbac.clusterRoleBindingName }}
+  name: {{ include "tekton.fullname" . }}-clusterrolebinding
 subjects:
-{{- range .Values.rbac.roles }}
   - kind: Group
-    name: {{ .groupName }}
+    name: {{ .Values.rbac.groupName }}
     apiGroup: rbac.authorization.k8s.io
-  - kind: ServiceAccount
-    name: {{ .serviceAccountName }}
-    namespace: {{ .serviceAccountNamespace }}
-{{- end }}
 roleRef:
   kind: ClusterRole
-  name: {{ .Values.rbac.clusterRoleName }}
+  name: {{ include "tekton.fullname" . }}-clusterrole
   apiGroup: rbac.authorization.k8s.io
-{{- end }}
+
 {{- end }}
 

@@ -1,16 +1,4 @@
 rbac:
   enabled: true
-  clusterRoleName: "view-namespaces"
-  clusterRoleBindingName: "view-namespaces-binding"
-  roles:
-    - roleName: ""
-      roleNamespace: ""
-      groupName: ""
-      serviceAccountName: ""
-      serviceAccountNamespace: ""
-    - roleName: ""
-      roleNamespace: ""
-      groupName: ""
-      serviceAccountName: ""
-      serviceAccountNamespace: ""
+  groupName: ""
 
